@@ -1,14 +1,14 @@
 package com.example.RentACar.controller;
 
 import com.example.RentACar.dao.*;
-import com.example.RentACar.model.request.ContractApprovalRequestModel;
-import com.example.RentACar.model.request.ContractSampleRequestModel;
-import com.example.RentACar.model.request.SignedContractRequestModel;
-import com.example.RentACar.model.response.ContractResponseModel;
-import com.example.RentACar.model.response.ContractSampleResponseModel;
-import com.example.RentACar.model.response.SignedContractResponseModel;
+import com.example.RentACar.model.request.contract.ContractApprovalRequestModel;
+import com.example.RentACar.model.request.contract.ContractSampleRequestModel;
+import com.example.RentACar.model.request.contract.SignedContractRequestModel;
+import com.example.RentACar.model.response.contract.ContractResponseModel;
+import com.example.RentACar.model.response.contract.ContractSampleResponseModel;
+import com.example.RentACar.model.response.contract.SignedContractResponseModel;
 import org.springframework.web.bind.annotation.*;
-import javax.websocket.server.PathParam;
+
 import java.time.LocalDate;
 import java.util.List;
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -17,32 +17,36 @@ public class ContractController {
     private static ContractDao contractDao = new ContractDaoSQL();
     private static CarDao carDao = new CarDaoSQL();
     private static UserDao userDao = new UserDaoSQL();
-    private static double getContractPrice(LocalDate start_date, LocalDate end_date, String car_id){
-        double price = carDao.getPrice(car_id);
-        int days = (int) (DAYS.between(start_date, end_date) + 1);
+
+    private static double getContractPrice(LocalDate startDate, LocalDate endDate, String carId) {
+        double price = carDao.getPrice(carId);
+        int days = (int) DAYS.between(startDate, endDate) + 1;
         return price * days;
     }
+
     @PostMapping("/contracts/sample")
     public ContractSampleResponseModel getContractSample(
-            @RequestBody ContractSampleRequestModel conSample){
-        double contractPrice = getContractPrice(conSample.getStart_date(),
-                conSample.getEnd_date(),conSample.getCar_id());
-        return  new ContractSampleResponseModel(conSample.getUser_id(),
-                conSample.getCar_id(),conSample.getStart_date(),conSample.getEnd_date(),
-                contractPrice, false);
+            @RequestBody ContractSampleRequestModel conSample) {
+        double contractPrice = getContractPrice(conSample.getStartDate(),
+                conSample.getEndDate(), conSample.getCarId());
+
+        return new ContractSampleResponseModel(conSample.getUserId(), conSample.getCarId(),
+                conSample.getStartDate(), conSample.getEndDate(), contractPrice, false);
     }
+
     @PostMapping("/contracts")
     public SignedContractResponseModel postSingedContract
             (@RequestBody SignedContractRequestModel contract){
-        if (contractDao.userHasPendingContract(contract.getUser_id())){
+        if (contractDao.userHasPendingContract(contract.getUserId())){
             return new SignedContractResponseModel(false, "User already has pending contract!!");
         }
-        if (!carDao.isCarAvailable(contract.getStart_date(), contract.getEnd_date(), contract.getCar_id())){
+        if (!carDao.isCarAvailable(contract.getStartDate(), contract.getEndDate(), contract.getCarId())){
             return new SignedContractResponseModel(false, "Car is not available for whole duration of the contract!!");
         }
-        contractDao.addContractToDatabase(contract);
+        contractDao.addContractToDB(contract);
         return new SignedContractResponseModel(true, "Contract created, waiting for approval!!");
     }
+
     @GetMapping("/contracts")
     public List<ContractResponseModel> getAllcontracts(@RequestHeader("authorization") String adminId) {
         if (!userDao.isAdmin(adminId)) {
@@ -50,6 +54,7 @@ public class ContractController {
         }
         return contractDao.getAllContracts();
     }
+
     @GetMapping("/contracts/pending")
     public List<ContractResponseModel> getAllPendingContracts
             (@RequestHeader("authorization") String adminId) {
@@ -58,22 +63,24 @@ public class ContractController {
         }
         return contractDao.getAllPendingContracts();
     }
+
     @GetMapping("/contracts/{userId}/history")
-    public List<ContractResponseModel> getContractHistory(@PathParam("userId") String userId) {
-        return contractDao.getContractHistory(userId);
+    public List<ContractResponseModel> getContractHistory(@PathVariable("userId") String id) {
+        return contractDao.getContractHistory(id);
     }
+
     @PostMapping("/contracts/{contractId}/approval")
-    public void approveContract(@PathParam("contractId") String contractId,
-                                @RequestHeader("authorization") String adminId,
+    public void approveContract(@RequestHeader("authorization") String adminId,
+                                @PathVariable("contractId") String contractId,
                                 @RequestBody ContractApprovalRequestModel adminApproval){
+
         if (!userDao.isAdmin(adminId)){
             return;
         }
         if (adminApproval.isApproved()){
             contractDao.updateContractApproval(contractId, true);
         }
-        else {
+        else
             contractDao.deleteContract(contractId);
-        }
     }
 }

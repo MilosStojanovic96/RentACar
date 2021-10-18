@@ -1,10 +1,10 @@
 package com.example.RentACar.dao;
 
 import com.example.RentACar.connection.DatabaseConnection;
-import com.example.RentACar.model.CarsModel;
 import com.example.RentACar.model.SearchCarModel;
-import com.example.RentACar.model.request.ChangeCarInfoRequestModel;
-import com.example.RentACar.model.response.GetCarResponseModel;
+import com.example.RentACar.model.request.car.AddCarRequestModel;
+import com.example.RentACar.model.request.car.ChangeCarInfoRequestModel;
+import com.example.RentACar.model.response.car.GetCarResponseModel;
 
 import java.sql.Connection;
 import java.time.LocalDate;
@@ -19,6 +19,6 @@ public interface CarDao {
     GetCarResponseModel getCar(String id);
     void updateCarInfo(String id, ChangeCarInfoRequestModel carInfo);
     void delete(String id);
-    void addCar(CarsModel car);
+    void addCar(AddCarRequestModel car);
     double getPrice(String id);
 }

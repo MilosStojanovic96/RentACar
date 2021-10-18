@@ -1,7 +1,7 @@
 package com.example.RentACar.dao;
 
-import com.example.RentACar.model.request.SignedContractRequestModel;
-import com.example.RentACar.model.response.ContractResponseModel;
+import com.example.RentACar.model.request.contract.SignedContractRequestModel;
+import com.example.RentACar.model.response.contract.ContractResponseModel;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -12,15 +12,14 @@ import java.util.stream.Collectors;
 public class ContractDaoSQL implements ContractDao{
     private static PreparedStatement preparedStatement;
     private static Statement statement;
-
     @Override
-    public List<LocalDate> getCarOccupiedDates(String car_id) {
+    public List<LocalDate> getCarOccupiedDates(String carId) {
         List<LocalDate> dates = new ArrayList<>();
         try {
             statement = conn.createStatement();
             ResultSet rs = statement.executeQuery("SELECT start_date, end_date" +
                     " FROM contracts" +
-                    " WHERE car_id = '" + car_id + "';");
+                    " WHERE car_id = '" + carId + "';");
             while (rs.next()) {
                 dates.addAll(LocalDate.parse(rs.getString(1))
                         .datesUntil(LocalDate.parse(rs.getString(2))
@@ -77,12 +76,12 @@ public class ContractDaoSQL implements ContractDao{
     }
 
     @Override
-    public List<ContractResponseModel> getContractHistory(String user_id) {
+    public List<ContractResponseModel> getContractHistory(String userId) {
         List<ContractResponseModel> contracts = new ArrayList<>();
         try {
             statement = conn.createStatement();
             ResultSet rs = statement.executeQuery("SELECT * FROM contracts" +
-                    " WHERE user_id = '" + user_id + "';");
+                    " WHERE user_id = '" + userId + "';");
             while (rs.next()){
                 ContractResponseModel contract =
                         new ContractResponseModel(rs.getString(1), rs.getString(2),
@@ -99,39 +98,37 @@ public class ContractDaoSQL implements ContractDao{
     }
 
     @Override
-    public void deleteContract(String contract_id) {
+    public void deleteContract(String contractId) {
         try {
             preparedStatement = conn.prepareStatement("DELETE FROM contracts " +
                     " WHERE contract_id = ?");
-            preparedStatement.setString(1, contract_id);
+            preparedStatement.setString(1, contractId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
-    public void updateContractApproval(String contract_id, boolean approval) {
+    public void updateContractApproval(String contractId, Boolean approval) {
         try {
             preparedStatement = conn.prepareStatement("UPDATE contracts " +
                     " SET approved = ?" +
                     " WHERE contract_id = ?");
             preparedStatement.setBoolean(1, approval);
-            preparedStatement.setString(2, contract_id);
+            preparedStatement.setString(2, contractId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 
     @Override
-    public boolean userHasPendingContract(String user_id) {
+    public boolean userHasPendingContract(String userId) {
         try {
             statement = conn.createStatement();
             ResultSet rs = statement.executeQuery("SELECT * FROM contracts" +
-                    " WHERE user_id = '" + user_id +"' AND approved = false");
+                    " WHERE user_id = '" + userId +"' AND approved = false");
             if (rs.next()){
                 return true;
             }
@@ -143,21 +140,20 @@ public class ContractDaoSQL implements ContractDao{
     }
 
     @Override
-    public void addContractToDatabase(SignedContractRequestModel contract) {
+    public void addContractToDB(SignedContractRequestModel contract) {
         try {
             preparedStatement = conn.prepareStatement("INSERT INTO contracts " +
                     " VALUES (?, ?, ?, ?, ?, ?, ?, false)");
             preparedStatement.setString(1, contract.getContract_id().toString());
-            preparedStatement.setString(2, contract.getUser_id());
-            preparedStatement.setString(3, contract.getCar_id());
-            preparedStatement.setDate(4, Date.valueOf(contract.getStart_date()));
-            preparedStatement.setDate(5, Date.valueOf(contract.getEnd_date()));
-            preparedStatement.setDouble(6, contract.getTotal_price());
+            preparedStatement.setString(2, contract.getUserId());
+            preparedStatement.setString(3, contract.getCarId());
+            preparedStatement.setDate(4, Date.valueOf(contract.getStartDate()));
+            preparedStatement.setDate(5, Date.valueOf(contract.getEndDate()));
+            preparedStatement.setDouble(6, contract.getTotalPrice());
             preparedStatement.setBoolean(7, contract.isSigned());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
     }
 }

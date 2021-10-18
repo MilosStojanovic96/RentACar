@@ -3,8 +3,8 @@ package com.example.RentACar.controller;
 import com.example.RentACar.dao.UserDao;
 import com.example.RentACar.dao.UserDaoSQL;
 import com.example.RentACar.model.AdminUpdateUserModel;
-import com.example.RentACar.model.request.AdminChangeUserInfoRequestModel;
-import com.example.RentACar.model.response.AdminChangeUserInfoResponseModel;
+import com.example.RentACar.model.request.admin.AdminChangeUserInfoRequestModel;
+import com.example.RentACar.model.response.admin.AdminChangeUserInfoResponseModel;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,15 +37,16 @@ public class AdminController {
         if ((!email.isEmpty()) && !isEmailValid(email)){
             email = "";
         }
-        if (username.isEmpty() && email.isEmpty() && info.getFirst_name().isEmpty()
-                && info.getLast_name().isEmpty() && info.getPersonal_number().isEmpty()
-                && info.getPhone_number().isEmpty() && info.getImage().isEmpty()){
+        if (username.isEmpty() && email.isEmpty() && info.getFirstName().isEmpty()
+                && info.getLastName().isEmpty() && info.getPersonalNumber().isEmpty()
+                && info.getPhoneNumber().isEmpty() && info.getImage().isEmpty()){
             return new AdminChangeUserInfoResponseModel(false, "Update isn't successful!!");
         }
-        AdminUpdateUserModel userInfo = new AdminUpdateUserModel(username, email, info.getFirst_name(),
-                info.getLast_name(), info.getPhone_number(), info.getPersonal_number(), info.getImage());
+        AdminUpdateUserModel userInfo = new AdminUpdateUserModel(username, email, info.getFirstName(),
+                info.getLastName(), info.getPhoneNumber(), info.getPersonalNumber(), info.getImage());
 
         userDao.adminUpdateUserInfo(userInfo, userId);
         return new AdminChangeUserInfoResponseModel(true, "Success!!!");
+
     }
 }

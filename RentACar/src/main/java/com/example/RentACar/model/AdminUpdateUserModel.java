@@ -1,22 +1,16 @@
 package com.example.RentACar.model;
 
 public class AdminUpdateUserModel {
-    private String username;
-    private String email;
-    private String first_name;
-    private String last_name;
-    private String phone_number;
-    private String personal_number;
-    private String image;
+    private String username, email, firstName, lastName, phoneNumber, personalNumber, image;
 
-    public AdminUpdateUserModel(String username, String email, String first_name, String last_name,
-                                String phone_number, String personal_number, String image) {
+    public AdminUpdateUserModel(String username, String email, String firstName, String lastName,
+                                String phoneNumber, String personalNumber, String image) {
         this.username = username;
         this.email = email;
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.phone_number = phone_number;
-        this.personal_number = personal_number;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.personalNumber = personalNumber;
         this.image = image;
     }
 
@@ -28,20 +22,20 @@ public class AdminUpdateUserModel {
         return email;
     }
 
-    public String getFirst_name() {
-        return first_name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public String getLast_name() {
-        return last_name;
+    public String getLastName() {
+        return lastName;
     }
 
-    public String getPhone_number() {
-        return phone_number;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public String getPersonal_number() {
-        return personal_number;
+    public String getPersonalNumber() {
+        return personalNumber;
     }
 
     public String getImage() {

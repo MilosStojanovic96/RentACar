@@ -1,9 +1,9 @@
 package com.example.RentACar.dao;
 
-import com.example.RentACar.model.CarsModel;
 import com.example.RentACar.model.SearchCarModel;
-import com.example.RentACar.model.request.ChangeCarInfoRequestModel;
-import com.example.RentACar.model.response.GetCarResponseModel;
+import com.example.RentACar.model.request.car.AddCarRequestModel;
+import com.example.RentACar.model.request.car.ChangeCarInfoRequestModel;
+import com.example.RentACar.model.response.car.GetCarResponseModel;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CarDaoSQL implements CarDao{
-
     private ContractDao contractDao = new ContractDaoSQL();
     private static PreparedStatement preparedStatement;
     private static Statement statement;
+
     @Override
     public List<GetCarResponseModel> getAllCars() {
         List<GetCarResponseModel> allCars = new ArrayList<>();
@@ -35,43 +35,47 @@ public class CarDaoSQL implements CarDao{
                 allCars.add(car);
             }
             return allCars;
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return allCars;
     }
+
     @Override
-    public List<GetCarResponseModel> searchCars(SearchCarModel searchCarModel, List<GetCarResponseModel> cars) {
+    public List<GetCarResponseModel> searchCars(SearchCarModel search, List<GetCarResponseModel> cars) {
         List<GetCarResponseModel> searchResult = new ArrayList<>();
-        if (searchCarModel.getAutomatic() == null && searchCarModel.getDoors() == null
-                && searchCarModel.getModel() == null && searchCarModel.getMake() == null &&searchCarModel.getPower() == null
-                && searchCarModel.getPrice() == null && searchCarModel.getYear() == null){
+
+        if (search.getAutomatic() == null && search.getDoors() == null
+                && search.getModel() == null && search.getMake() == null &&search.getPower() == null
+                && search.getPrice() == null && search.getYear() == null){
             return cars;
         }
         for (var car : cars){
-            if ((searchCarModel.getAutomatic() == null || searchCarModel.getAutomatic() == car.isAutomatic())
-                    && (searchCarModel.getYear() == null || searchCarModel.getYear() <= car.getYear())
-                    && (searchCarModel.getDoors() == null || searchCarModel.getDoors() == car.getDoors())
-                    && (searchCarModel.getModel() == null || car.getModel().toLowerCase().contains(searchCarModel.getModel().toLowerCase()))
-                    && (searchCarModel.getMake() == null || car.getMake().toLowerCase().contains(searchCarModel.getMake().toLowerCase()))
-                    && (searchCarModel.getPower() == null || searchCarModel.getPower() >= car.getPower())
-                    && (searchCarModel.getPrice() == null || searchCarModel.getPrice() >= car.getPrice())){
+            if ((search.getAutomatic() == null || search.getAutomatic() == car.isAutomatic())
+                    && (search.getYear() == null || search.getYear() <= car.getYear())
+                    && (search.getDoors() == null || search.getDoors() == car.getDoors())
+                    && (search.getModel() == null || car.getModel().toLowerCase().contains(search.getModel().toLowerCase()))
+                    && (search.getMake() == null || car.getMake().toLowerCase().contains(search.getMake().toLowerCase()))
+                    && (search.getPower() == null || search.getPower() >= car.getPower())
+                    && (search.getPrice() == null || search.getPrice() >= car.getPrice())){
                 searchResult.add(car);
             }
         }
         return searchResult;
     }
+
     @Override
     public List<GetCarResponseModel> getAvailableCars(LocalDate startDate, LocalDate endDate) {
         List<GetCarResponseModel> allCars = getAllCars();
         List<GetCarResponseModel> availableCars = new ArrayList<>();
         for (var car : allCars){
-            if (isCarAvailable(startDate, endDate, car.getCar_id())){
+            if (isCarAvailable(startDate, endDate, car.getCarId())){
                 availableCars.add(car);
             }
         }
         return availableCars;
     }
+
     @Override
     public boolean isCarAvailable(LocalDate startDate, LocalDate endDate, String carId) {
         List<LocalDate> desiredDates = startDate.datesUntil(endDate.plusDays(1)).collect(Collectors.toList());
@@ -83,6 +87,7 @@ public class CarDaoSQL implements CarDao{
         }
         return true;
     }
+
     @Override
     public GetCarResponseModel getCar(String id) {
         try {
@@ -95,11 +100,13 @@ public class CarDaoSQL implements CarDao{
                     rs.getDouble(8), rs.getInt(9), rs.getString(10),
                     rs.getInt(11), rs.getBoolean(12), rs.getString(13),
                     rs.getString(14));
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+
         return null;
     }
+
     @Override
     public void updateCarInfo(String id, ChangeCarInfoRequestModel carInfo) {
         try {
@@ -117,13 +124,14 @@ public class CarDaoSQL implements CarDao{
                     " automatic = ?," +
                     " fuel = ?," +
                     " image = ? WHERE car_id = '" + id + "';");
-            //statement = conn.createStatement();
-            //ResultSet rs = statement.executeQuery()
-            preparedStatement.setString(1, carInfo.getLicence_plate());
+//            statement = conn.createStatement();
+//            ResultSet rs = statement.executeQuery()
+            // TODO check info
+            preparedStatement.setString(1, carInfo.getLicencePlate());
             preparedStatement.setString(2, carInfo.getMake());
             preparedStatement.setString(3, carInfo.getModel());
             preparedStatement.setInt(4, carInfo.getYear());
-            preparedStatement.setInt(5, carInfo.getEngine_capacity());
+            preparedStatement.setInt(5, carInfo.getEngineCapacity());
             preparedStatement.setString(6, carInfo.getColor());
             preparedStatement.setDouble(7, carInfo.getPrice());
             preparedStatement.setInt(8, carInfo.getDoors());
@@ -133,10 +141,12 @@ public class CarDaoSQL implements CarDao{
             preparedStatement.setString(12, carInfo.getFuel());
             preparedStatement.setString(13, carInfo.getImage());
             preparedStatement.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
     @Override
     public void delete(String id) {
         try {
@@ -147,17 +157,18 @@ public class CarDaoSQL implements CarDao{
             e.printStackTrace();
         }
     }
+
     @Override
-    public void addCar(CarsModel carInfo) {
+    public void addCar(AddCarRequestModel carInfo) {
         try {
             preparedStatement = conn.prepareStatement("INSERT INTO cars " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            preparedStatement.setString(1, carInfo.getCar_id().toString());
-            preparedStatement.setString(2, carInfo.getLicence_plate());
+            preparedStatement.setString(1, carInfo.getId().toString());
+            preparedStatement.setString(2, carInfo.getLicencePlate());
             preparedStatement.setString(3, carInfo.getMake());
             preparedStatement.setString(4, carInfo.getModel());
             preparedStatement.setInt(5, carInfo.getYear());
-            preparedStatement.setInt(6, carInfo.getEngine_capacity());
+            preparedStatement.setInt(6, carInfo.getEngineCapacity());
             preparedStatement.setString(7, carInfo.getColor());
             preparedStatement.setDouble(8, carInfo.getPrice());
             preparedStatement.setInt(9, carInfo.getDoors());
@@ -167,10 +178,12 @@ public class CarDaoSQL implements CarDao{
             preparedStatement.setString(13, carInfo.getFuel());
             preparedStatement.setString(14, carInfo.getImage());
             preparedStatement.executeUpdate();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+
     @Override
     public double getPrice(String id) {
         try {
